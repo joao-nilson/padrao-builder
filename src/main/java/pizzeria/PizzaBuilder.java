@@ -3,24 +3,23 @@ package pizzeria;
 import java.util.ArrayList;
 import java.util.List;
 
-import pizzeria.Pizza.Cheese;
-import pizzeria.Pizza.Crust;
-import pizzeria.Pizza.Sauce;
-import pizzeria.Pizza.Size;
+import pizzeria.ingredient.Cheese;
+import pizzeria.ingredient.Crust;
+import pizzeria.ingredient.MozzarellaCheese;
+import pizzeria.ingredient.Sauce;
+import pizzeria.ingredient.Size;
+import pizzeria.ingredient.TomatoSauce;
+import pizzeria.ingredient.Topping;
 
-/**
- * Builder: assembles a custom pizza step by step.
- * Size and crust are required; sauce and cheese have defaults; toppings are optional.
- */
 public class PizzaBuilder {
 
     public static final int MAX_TOPPINGS = 5;
 
     private Size size;
     private Crust crust;
-    private Sauce sauce = Sauce.TOMATO;
-    private Cheese cheese = Cheese.MOZZARELLA;
-    private final List<String> toppings = new ArrayList<>();
+    private Sauce sauce = new TomatoSauce();
+    private Cheese cheese = new MozzarellaCheese();
+    private final List<Topping> toppings = new ArrayList<>();
 
     public PizzaBuilder size(Size size) {
         this.size = size;
@@ -42,11 +41,11 @@ public class PizzaBuilder {
         return this;
     }
 
-    public PizzaBuilder addTopping(String topping) {
-        if (topping == null || topping.trim().isEmpty()) {
+    public PizzaBuilder addTopping(Topping topping) {
+        if (topping == null) {
             throw new IllegalArgumentException("Invalid topping");
         }
-        toppings.add(topping.trim());
+        toppings.add(topping);
         return this;
     }
 
@@ -66,7 +65,6 @@ public class PizzaBuilder {
         if (toppings.size() > MAX_TOPPINGS) {
             throw new IllegalArgumentException("Too many toppings (max " + MAX_TOPPINGS + ")");
         }
-        // copy the list so reusing the builder never changes a pizza already built
         return new Pizza(size, crust, sauce, cheese, new ArrayList<>(toppings));
     }
 }

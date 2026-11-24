@@ -2,12 +2,16 @@ package pizzeria;
 
 import org.junit.jupiter.api.Test;
 
-import pizzeria.Pizza.Cheese;
-import pizzeria.Pizza.Crust;
-import pizzeria.Pizza.Sauce;
-import pizzeria.Pizza.Size;
-
-import java.util.Arrays;
+import pizzeria.ingredient.BbqSauce;
+import pizzeria.ingredient.CheddarCheese;
+import pizzeria.ingredient.LargeSize;
+import pizzeria.ingredient.MozzarellaCheese;
+import pizzeria.ingredient.MushroomTopping;
+import pizzeria.ingredient.PepperoniTopping;
+import pizzeria.ingredient.SmallSize;
+import pizzeria.ingredient.StuffedCrust;
+import pizzeria.ingredient.ThinCrust;
+import pizzeria.ingredient.TomatoSauce;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -16,36 +20,38 @@ class PizzaBuilderTest {
     @Test
     void shouldBuildFullyCustomPizza() {
         Pizza pizza = new PizzaBuilder()
-                .size(Size.LARGE)
-                .crust(Crust.STUFFED)
-                .sauce(Sauce.PESTO)
-                .cheese(Cheese.GORGONZOLA)
-                .addTopping("Mushroom")
-                .addTopping("Olives")
+                .size(new LargeSize())
+                .crust(new StuffedCrust())
+                .sauce(new BbqSauce())
+                .cheese(new CheddarCheese())
+                .addTopping(new MushroomTopping())
+                .addTopping(new PepperoniTopping())
                 .build();
 
-        assertEquals(Size.LARGE, pizza.getSize());
-        assertEquals(Crust.STUFFED, pizza.getCrust());
-        assertEquals(Sauce.PESTO, pizza.getSauce());
-        assertEquals(Cheese.GORGONZOLA, pizza.getCheese());
-        assertEquals(Arrays.asList("Mushroom", "Olives"), pizza.getToppings());
+        assertEquals("Large", pizza.getSize().getName());
+        assertEquals("Stuffed", pizza.getCrust().getName());
+        assertEquals("BBQ", pizza.getSauce().getName());
+        assertEquals("Cheddar", pizza.getCheese().getName());
+        assertEquals(2, pizza.getToppings().size());
+        assertEquals("Mushroom", pizza.getToppings().get(0).getName());
+        assertEquals("Pepperoni", pizza.getToppings().get(1).getName());
     }
 
     @Test
     void shouldUseDefaultSauceAndCheeseWhenNotInformed() {
         Pizza pizza = new PizzaBuilder()
-                .size(Size.MEDIUM)
-                .crust(Crust.THIN)
+                .size(new LargeSize())
+                .crust(new ThinCrust())
                 .build();
 
-        assertEquals(Sauce.TOMATO, pizza.getSauce());
-        assertEquals(Cheese.MOZZARELLA, pizza.getCheese());
+        assertEquals("Tomato", pizza.getSauce().getName());
+        assertEquals("Mozzarella", pizza.getCheese().getName());
         assertTrue(pizza.getToppings().isEmpty());
     }
 
     @Test
     void shouldThrowExceptionWhenSizeIsMissing() {
-        PizzaBuilder builder = new PizzaBuilder().crust(Crust.THIN);
+        PizzaBuilder builder = new PizzaBuilder().crust(new ThinCrust());
 
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, builder::build);
         assertEquals("Size is required", e.getMessage());
@@ -53,7 +59,7 @@ class PizzaBuilderTest {
 
     @Test
     void shouldThrowExceptionWhenCrustIsMissing() {
-        PizzaBuilder builder = new PizzaBuilder().size(Size.SMALL);
+        PizzaBuilder builder = new PizzaBuilder().size(new SmallSize());
 
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, builder::build);
         assertEquals("Crust is required", e.getMessage());
@@ -61,8 +67,8 @@ class PizzaBuilderTest {
 
     @Test
     void shouldThrowExceptionWhenSauceOrCheeseIsSetToNull() {
-        PizzaBuilder noSauce = new PizzaBuilder().size(Size.SMALL).crust(Crust.THIN).sauce(null);
-        PizzaBuilder noCheese = new PizzaBuilder().size(Size.SMALL).crust(Crust.THIN).cheese(null);
+        PizzaBuilder noSauce = new PizzaBuilder().size(new SmallSize()).crust(new ThinCrust()).sauce(null);
+        PizzaBuilder noCheese = new PizzaBuilder().size(new SmallSize()).crust(new ThinCrust()).cheese(null);
 
         assertEquals("Sauce is required",
                 assertThrows(IllegalArgumentException.class, noSauce::build).getMessage());
@@ -71,29 +77,18 @@ class PizzaBuilderTest {
     }
 
     @Test
-    void shouldRejectBlankOrNullTopping() {
+    void shouldRejectNullTopping() {
         PizzaBuilder builder = new PizzaBuilder();
 
-        assertThrows(IllegalArgumentException.class, () -> builder.addTopping(null));
-        assertThrows(IllegalArgumentException.class, () -> builder.addTopping("   "));
-    }
-
-    @Test
-    void shouldTrimToppingNames() {
-        Pizza pizza = new PizzaBuilder()
-                .size(Size.SMALL)
-                .crust(Crust.THIN)
-                .addTopping("  Ham ")
-                .build();
-
-        assertEquals(Arrays.asList("Ham"), pizza.getToppings());
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> builder.addTopping(null));
+        assertEquals("Invalid topping", e.getMessage());
     }
 
     @Test
     void shouldAcceptMaximumNumberOfToppings() {
-        PizzaBuilder builder = new PizzaBuilder().size(Size.LARGE).crust(Crust.TRADITIONAL);
-        for (int i = 1; i <= PizzaBuilder.MAX_TOPPINGS; i++) {
-            builder.addTopping("Topping " + i);
+        PizzaBuilder builder = new PizzaBuilder().size(new LargeSize()).crust(new ThinCrust());
+        for (int i = 0; i < PizzaBuilder.MAX_TOPPINGS; i++) {
+            builder.addTopping(new MushroomTopping());
         }
 
         assertEquals(PizzaBuilder.MAX_TOPPINGS, builder.build().getToppings().size());
@@ -101,9 +96,9 @@ class PizzaBuilderTest {
 
     @Test
     void shouldThrowExceptionWhenTooManyToppings() {
-        PizzaBuilder builder = new PizzaBuilder().size(Size.LARGE).crust(Crust.TRADITIONAL);
-        for (int i = 1; i <= PizzaBuilder.MAX_TOPPINGS + 1; i++) {
-            builder.addTopping("Topping " + i);
+        PizzaBuilder builder = new PizzaBuilder().size(new LargeSize()).crust(new ThinCrust());
+        for (int i = 0; i <= PizzaBuilder.MAX_TOPPINGS; i++) {
+            builder.addTopping(new MushroomTopping());
         }
 
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, builder::build);
@@ -113,23 +108,24 @@ class PizzaBuilderTest {
     @Test
     void builtPizzaToppingsShouldBeImmutable() {
         Pizza pizza = new PizzaBuilder()
-                .size(Size.SMALL)
-                .crust(Crust.THIN)
-                .addTopping("Ham")
+                .size(new SmallSize())
+                .crust(new ThinCrust())
+                .addTopping(new PepperoniTopping())
                 .build();
 
-        assertThrows(UnsupportedOperationException.class, () -> pizza.getToppings().add("Pineapple"));
+        assertThrows(UnsupportedOperationException.class,
+                () -> pizza.getToppings().add(new MushroomTopping()));
     }
 
     @Test
     void reusingBuilderShouldNotChangePizzaAlreadyBuilt() {
         PizzaBuilder builder = new PizzaBuilder()
-                .size(Size.MEDIUM)
-                .crust(Crust.TRADITIONAL)
-                .addTopping("Ham");
+                .size(new LargeSize())
+                .crust(new ThinCrust())
+                .addTopping(new PepperoniTopping());
 
         Pizza first = builder.build();
-        builder.addTopping("Corn");
+        builder.addTopping(new MushroomTopping());
         Pizza second = builder.build();
 
         assertEquals(1, first.getToppings().size());
@@ -137,14 +133,53 @@ class PizzaBuilderTest {
     }
 
     @Test
-    void toStringShouldDescribePizza() {
+    void shouldCalculateTotalPriceFromEachIngredient() {
+        // Large 40 + Stuffed 6 + BBQ 1.5 + Cheddar 3.5 + Pepperoni 4 + Mushroom 3 = 58
         Pizza pizza = new PizzaBuilder()
-                .size(Size.SMALL)
-                .crust(Crust.THIN)
-                .addTopping("Ham")
+                .size(new LargeSize())
+                .crust(new StuffedCrust())
+                .sauce(new BbqSauce())
+                .cheese(new CheddarCheese())
+                .addTopping(new PepperoniTopping())
+                .addTopping(new MushroomTopping())
                 .build();
 
-        assertEquals("SMALL pizza | crust: THIN | sauce: TOMATO | cheese: MOZZARELLA | toppings: [Ham]",
+        assertEquals(58.0, pizza.getTotalPrice(), 0.001);
+    }
+
+    @Test
+    void shouldCalculatePriceWithDefaultsAndNoToppings() {
+        // Small 20 + Thin 2 + Tomato 1 + Mozzarella 3 = 26
+        Pizza pizza = new PizzaBuilder()
+                .size(new SmallSize())
+                .crust(new ThinCrust())
+                .build();
+
+        assertEquals(26.0, pizza.getTotalPrice(), 0.001);
+    }
+
+    @Test
+    void swappingAStrategyShouldChangeThePrice() {
+        PizzaBuilder builder = new PizzaBuilder().size(new SmallSize()).crust(new ThinCrust());
+        double thin = builder.build().getTotalPrice();
+
+        double stuffed = builder.crust(new StuffedCrust()).build().getTotalPrice();
+
+        assertEquals(4.0, stuffed - thin, 0.001);
+    }
+
+    @Test
+    void toStringShouldDescribePizza() {
+        Pizza pizza = new PizzaBuilder()
+                .size(new SmallSize())
+                .crust(new ThinCrust())
+                .sauce(new TomatoSauce())
+                .cheese(new MozzarellaCheese())
+                .addTopping(new PepperoniTopping())
+                .build();
+
+        assertEquals("Small pizza | crust: Thin | sauce: Tomato | cheese: Mozzarella"
+                        + " | toppings: [Pepperoni] | total: $30.00",
                 pizza.toString());
     }
 }

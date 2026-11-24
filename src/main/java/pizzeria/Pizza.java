@@ -2,28 +2,24 @@ package pizzeria;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
-/**
- * Product: an immutable pizza. It can only be created through {@link PizzaBuilder}.
- */
+import pizzeria.ingredient.Cheese;
+import pizzeria.ingredient.Crust;
+import pizzeria.ingredient.Sauce;
+import pizzeria.ingredient.Size;
+import pizzeria.ingredient.Topping;
+
 public class Pizza {
-
-    public enum Size { SMALL, MEDIUM, LARGE }
-
-    public enum Crust { THIN, TRADITIONAL, STUFFED }
-
-    public enum Sauce { TOMATO, BBQ, WHITE, PESTO }
-
-    public enum Cheese { MOZZARELLA, CHEDDAR, PARMESAN, GORGONZOLA }
 
     private final Size size;
     private final Crust crust;
     private final Sauce sauce;
     private final Cheese cheese;
-    private final List<String> toppings;
+    private final List<Topping> toppings;
 
-    // package-private: only the builder (same package) can create a Pizza
-    Pizza(Size size, Crust crust, Sauce sauce, Cheese cheese, List<String> toppings) {
+    Pizza(Size size, Crust crust, Sauce sauce, Cheese cheese, List<Topping> toppings) {
         this.size = size;
         this.crust = crust;
         this.sauce = sauce;
@@ -47,13 +43,25 @@ public class Pizza {
         return cheese;
     }
 
-    public List<String> getToppings() {
+    public List<Topping> getToppings() {
         return toppings;
+    }
+
+    public double getTotalPrice() {
+        double total = size.getPrice() + crust.getPrice() + sauce.getPrice() + cheese.getPrice();
+        for (Topping topping : toppings) {
+            total += topping.getPrice();
+        }
+        return total;
     }
 
     @Override
     public String toString() {
-        return size + " pizza | crust: " + crust + " | sauce: " + sauce
-                + " | cheese: " + cheese + " | toppings: " + (toppings.isEmpty() ? "none" : toppings);
+        String toppingNames = toppings.isEmpty()
+                ? "none"
+                : toppings.stream().map(Topping::getName).collect(Collectors.toList()).toString();
+        return size.getName() + " pizza | crust: " + crust.getName() + " | sauce: " + sauce.getName()
+                + " | cheese: " + cheese.getName() + " | toppings: " + toppingNames
+                + " | total: $" + String.format(Locale.US, "%.2f", getTotalPrice());
     }
 }

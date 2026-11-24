@@ -1,27 +1,30 @@
 package pizzeria;
 
-import pizzeria.Pizza.Cheese;
-import pizzeria.Pizza.Crust;
-import pizzeria.Pizza.Sauce;
-import pizzeria.Pizza.Size;
+import pizzeria.ingredient.BbqSauce;
+import pizzeria.ingredient.CheddarCheese;
+import pizzeria.ingredient.LargeSize;
+import pizzeria.ingredient.MushroomTopping;
+import pizzeria.ingredient.PepperoniTopping;
+import pizzeria.ingredient.SmallSize;
+import pizzeria.ingredient.StuffedCrust;
+import pizzeria.ingredient.ThinCrust;
 
 public class Main {
 
     public static void main(String[] args) {
         Pizza custom = new PizzaBuilder()
-                .size(Size.LARGE)
-                .crust(Crust.STUFFED)
-                .sauce(Sauce.BBQ)
-                .cheese(Cheese.CHEDDAR)
-                .addTopping("Chicken")
-                .addTopping("Onion")
-                .addTopping("Bacon")
+                .size(new LargeSize())
+                .crust(new StuffedCrust())
+                .sauce(new BbqSauce())
+                .cheese(new CheddarCheese())
+                .addTopping(new PepperoniTopping())
+                .addTopping(new MushroomTopping())
                 .build();
 
         Pizza simple = new PizzaBuilder()
-                .size(Size.SMALL)
-                .crust(Crust.THIN)
-                .build(); // default sauce and cheese, no toppings
+                .size(new SmallSize())
+                .crust(new ThinCrust())
+                .build(); 
 
         System.out.println("Custom: " + custom);
         System.out.println("Simple: " + simple);
